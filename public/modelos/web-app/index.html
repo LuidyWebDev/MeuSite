@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Modelo demonstrativo de uma aplicação web para organizar projetos e tarefas de uma equipe criativa.">
+  <title>Ritmo | Tarefas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --ground: #000;
+      --surface: #111;
+      --raised: #2a2a2a;
+      --border: #1a1a1a;
+      --rule: #161616;
+      --control: #444;
+      --text: #fff;
+      --muted: #b4b4b4;
+      --faint: #949494;
+      --accent: #9fc7b8;
+      --radius: 20px;
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--ground);
+      color: var(--text);
+      font-synthesis: none;
+    }
+    * { box-sizing: border-box; }
+    body { min-width: 0; margin: 0; background: var(--ground); }
+    button, input { font: inherit; }
+    button:focus-visible, a:focus-visible, input:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+    a { color: inherit; text-underline-offset: .2em; }
+    ::selection { background: var(--accent); color: #000; }
+    .app-shell { display: grid; grid-template-columns: 220px minmax(0, 1fr); min-height: 100svh; }
+    .sidebar {
+      position: relative;
+      z-index: 12;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      padding: 22px 16px 18px;
+      border-right: 1px solid var(--border);
+      background: var(--ground);
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      width: fit-content;
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -.03em;
+      text-decoration: none;
+    }
+    .brand-mark { width: 22px; height: 22px; color: var(--accent); }
+    .workspace-name { margin: 29px 0 7px; color: var(--muted); font-size: 12px; }
+    .workspace-scope { margin: 0 0 27px; font-size: 14px; font-weight: 500; }
+    .nav-group { margin: 0 0 9px; color: var(--faint); font-size: 12px; }
+    .primary-nav { display: grid; gap: 4px; }
+    .nav-link {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      min-height: 36px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      text-align: left;
+      cursor: pointer;
+    }
+    .nav-link[aria-current="page"] { color: var(--text); }
+    .nav-link:hover { color: var(--text); background: var(--surface); }
+    .sidebar-foot {
+      display: grid;
+      gap: 9px;
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid var(--rule);
+      color: var(--faint);
+      font-size: 12px;
+    }
+    .sidebar-foot p { margin: 0; }
+    .sidebar-foot a { width: fit-content; color: var(--muted); }
+    .menu-backdrop { display: none; }
+    .app-main { min-width: 0; }
+    .app-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 64px;
+      gap: 18px;
+      padding: 0 clamp(18px, 3vw, 36px);
+      border-bottom: 1px solid var(--rule);
+    }
+    .breadcrumb { display: flex; align-items: center; gap: 10px; min-width: 0; color: var(--muted); font-size: 13px; }
+    .breadcrumb strong { overflow: hidden; color: var(--text); font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+    .breadcrumb-separator { color: var(--faint); }
+    .back-link { flex: 0 0 auto; color: var(--muted); font-size: 13px; }
+    .menu-toggle { display: none; }
+    .main-content { width: min(100%, 1480px); margin: 0 auto; padding: 28px clamp(18px, 3vw, 36px) 56px; }
+    .page-view[hidden] { display: none; }
+    .page-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
+    .page-heading h1 { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.25; }
+    .page-heading p { margin: 5px 0 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      min-height: 36px;
+      padding: 0 15px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--raised);
+      color: var(--text);
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .button:hover { background: #373737; }
+    .button-primary { background: var(--text); color: var(--ground); font-weight: 600; }
+    .button-primary:hover { background: #e6e6e6; }
+    .delivery-strip {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(200px, .75fr);
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 22px;
+      padding: 16px 18px;
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+    .delivery-label { margin: 0 0 4px; color: var(--faint); font-size: 12px; }
+    .delivery-title { margin: 0; font-size: 14px; font-weight: 500; }
+    .delivery-progress-label { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 9px; color: var(--muted); font-size: 12px; }
+    .delivery-progress-label strong { color: var(--text); font-weight: 500; white-space: nowrap; }
+    .progress-track { height: 4px; overflow: hidden; border-radius: 99px; background: var(--raised); }
+    .progress-fill { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--accent); }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 14px; }
+    .filters { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
+    .filter-button { gap: 7px; min-height: 34px; padding: 0 12px; color: var(--muted); font-size: 13px; }
+    .filter-button[aria-pressed="true"] { background: var(--raised); color: var(--text); }
+    .filter-count { color: var(--faint); font-size: 12px; font-variant-numeric: tabular-nums; }
+    .search-input {
+      width: min(260px, 100%);
+      min-height: 36px;
+      padding: 0 12px;
+      border: 1px solid var(--control);
+      border-radius: 8px;
+      background: var(--ground);
+      color: var(--text);
+      font-size: 14px;
+    }
+    .search-input::placeholder { color: var(--faint); opacity: 1; }
+    .board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 14px; }
+    .column { min-width: 0; padding: 14px; border-radius: var(--radius); background: var(--surface); }
+    .column-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 13px; }
+    .column-heading h2 { margin: 0; font-size: 16px; font-weight: 500; }
+    .column-count { color: var(--faint); font-size: 12px; font-variant-numeric: tabular-nums; }
+    .task-list { display: grid; align-content: start; gap: 8px; }
+    .task-card {
+      display: block;
+      width: 100%;
+      min-height: 78px;
+      padding: 12px;
+      border: 0;
+      border-radius: 13px;
+      background: var(--raised);
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+    }
+    .task-card:hover { background: #353535; }
+    .task-card:focus-visible { outline-offset: 2px; }
+    .task-line { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .task-title { font-size: 14px; line-height: 1.4; }
+    .task-marker { flex: 0 0 auto; width: 6px; height: 6px; margin-top: 6px; border-radius: 50%; background: transparent; }
+    .task-card[data-status="doing"] .task-marker { background: var(--accent); }
+    .task-meta { display: block; margin-top: 9px; color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .empty-state { grid-column: 1 / -1; margin: 0; padding: 15px 2px; color: var(--muted); font-size: 13px; }
+    .board-note { margin: 14px 0 0; color: var(--faint); font-size: 12px; line-height: 1.5; }
+    .activity-panel { margin-top: 16px; padding: 15px 16px; border-radius: var(--radius); background: var(--surface); }
+    .activity-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+    .activity-heading h2 { margin: 0; font-size: 15px; font-weight: 500; }
+    .activity-heading span { color: var(--faint); font-size: 12px; }
+    .activity-list { display: grid; }
+    .activity-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 42px; border-top: 1px solid var(--rule); }
+    .activity-row strong { display: block; font-size: 13px; font-weight: 400; }
+    .activity-row span { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; }
+    .activity-row time { flex: 0 0 auto; color: var(--muted); font-size: 12px; }
+    .project-panel { max-width: 760px; padding: 20px; border-radius: var(--radius); background: var(--surface); }
+    .project-panel h2 { margin: 0; font-size: 18px; font-weight: 500; }
+    .project-panel > p { margin: 8px 0 20px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .project-details { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 0 0 20px; }
+    .project-details div { padding: 12px; border-radius: 12px; background: var(--raised); }
+    .project-details dt { color: var(--muted); font-size: 12px; }
+    .project-details dd { margin: 5px 0 0; font-size: 14px; font-variant-numeric: tabular-nums; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    @media (max-width: 1100px) {
+      .app-shell { display: block; }
+      .sidebar { display: none; }
+      .app-shell.is-menu-open .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        display: flex;
+        width: min(320px, 86vw);
+        height: 100dvh;
+        border-right: 1px solid var(--border);
+      }
+      .app-shell.is-menu-open .menu-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 11;
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: rgb(0 0 0 / 70%);
+      }
+      .app-topbar { min-height: 56px; padding-inline: 16px; }
+      .menu-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 44px;
+        width: 44px;
+        height: 44px;
+        margin-left: 0;
+        border: 0;
+        background: transparent;
+        color: var(--text);
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .board { grid-template-columns: 1fr; }
+      .task-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 760px) {
+      .app-shell { display: block; }
+      .sidebar { display: none; }
+      .app-shell.is-menu-open .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        display: flex;
+        width: min(320px, 86vw);
+        height: 100dvh;
+        border-right: 1px solid var(--border);
+      }
+      .app-shell.is-menu-open .menu-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 11;
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: rgb(0 0 0 / 70%);
+      }
+      .app-topbar { min-height: 56px; padding: 0 16px; }
+      .menu-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 44px;
+        width: 44px;
+        height: 44px;
+        margin-left: 0;
+        border: 0;
+        background: transparent;
+        color: var(--text);
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .breadcrumb { flex: 1 1 auto; }
+      .breadcrumb > span:first-child, .breadcrumb-separator { display: none; }
+      .back-link { font-size: 12px; }
+      .main-content { padding: 21px 16px 44px; }
+      .page-heading { align-items: flex-start; gap: 12px; margin-bottom: 17px; }
+      .page-heading h1 { font-size: 22px; }
+      .page-heading p { max-width: 42ch; font-size: 13px; }
+      .button { min-height: 44px; padding-inline: 13px; }
+      .delivery-strip { grid-template-columns: 1fr; gap: 13px; margin-bottom: 18px; padding: 14px; }
+      .toolbar { align-items: stretch; flex-direction: column; gap: 10px; }
+      .filters { flex-wrap: nowrap; overflow-x: auto; padding: 2px 2px 5px; }
+      .filter-button { flex: 0 0 auto; min-height: 40px; }
+      .search-input { width: 100%; min-height: 42px; }
+      .board { grid-template-columns: 1fr; gap: 10px; }
+      .column { padding: 12px; border-radius: 16px; }
+      .task-list { grid-template-columns: 1fr; }
+      .task-card { min-height: 72px; }
+      .activity-panel { margin-top: 12px; padding: 13px; border-radius: 16px; }
+      .activity-row { align-items: flex-start; padding: 8px 0; }
+      .project-panel { padding: 16px; }
+      .project-details { grid-template-columns: 1fr; gap: 8px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell" id="app-shell">
+    <button class="menu-backdrop" id="menu-backdrop" type="button" aria-label="Fechar menu"></button>
+    <aside class="sidebar" id="sidebar" aria-label="Navegação do Ritmo">
+      <a class="brand" href="/" aria-label="Ritmo, voltar ao portfólio">
+        <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M3 12h4l3-6 4 12 3-6h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Ritmo</span>
+      </a>
+      <p class="workspace-name">Espaço de trabalho</p>
+      <p class="workspace-scope">Estúdio Aurora</p>
+      <p class="nav-group">Workspace</p>
+      <nav class="primary-nav" aria-label="Principal">
+        <button class="nav-link" type="button" data-view="tasks" aria-current="page">Tarefas</button>
+        <button class="nav-link" type="button" data-view="projects">Projetos</button>
+      </nav>
+      <div class="sidebar-foot">
+        <p>Ambiente demonstrativo</p>
+        <a href="/">Voltar ao portfólio</a>
+      </div>
+    </aside>
+    <div class="app-main">
+      <header class="app-topbar">
+        <button class="menu-toggle" id="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="sidebar">Menu</button>
+        <div class="breadcrumb" aria-label="Localização">
+          <span>Estúdio Aurora</span>
+          <span class="breadcrumb-separator" aria-hidden="true">/</span>
+          <strong id="breadcrumb-current">Identidade Aurora</strong>
+        </div>
+        <a class="back-link" href="/">Voltar ao portfólio</a>
+      </header>
+      <main class="main-content">
+        <section class="page-view" id="tasks-view" aria-labelledby="page-title">
+          <div class="page-heading">
+            <div>
+              <h1 id="page-title">Tarefas</h1>
+              <p id="task-summary">Identidade Aurora · dados de demonstração.</p>
+            </div>
+            <button class="button button-primary" id="add-task" type="button">Nova tarefa</button>
+          </div>
+          <section class="delivery-strip" aria-label="Progresso da próxima entrega">
+            <div>
+              <p class="delivery-label">Próxima entrega · 22 mai</p>
+              <p class="delivery-title">Identidade Aurora</p>
+            </div>
+            <div>
+              <div class="delivery-progress-label">
+                <span>Progresso do projeto</span>
+                <strong id="completion-label"></strong>
+              </div>
+              <div class="progress-track" role="progressbar" id="completion-progress" aria-label="Tarefas concluídas" aria-valuemin="0" aria-valuemax="6">
+                <span class="progress-fill" id="completion-fill"></span>
+              </div>
+            </div>
+          </section>
+          <div class="toolbar">
+            <div class="filters" role="group" aria-label="Filtrar tarefas">
+              <button class="button filter-button" type="button" data-filter="all" aria-pressed="true">Todas <span class="filter-count" id="all-count">6</span></button>
+              <button class="button filter-button" type="button" data-filter="open" aria-pressed="false">Em aberto <span class="filter-count" id="open-count">4</span></button>
+              <button class="button filter-button" type="button" data-filter="done" aria-pressed="false">Concluídas <span class="filter-count" id="done-count">2</span></button>
+            </div>
+            <label>
+              <span class="sr-only">Buscar tarefa</span>
+              <input class="search-input" id="task-search" type="search" placeholder="Buscar tarefa">
+            </label>
+          </div>
+          <div class="board" id="board" aria-live="polite"></div>
+          <section class="activity-panel" aria-labelledby="activity-title">
+            <div class="activity-heading">
+              <h2 id="activity-title">Últimas concluídas</h2>
+              <span id="activity-count"></span>
+            </div>
+            <div class="activity-list" id="activity-list" aria-live="polite"></div>
+          </section>
+          <p class="board-note">Tarefas e alterações são temporárias e não ficam salvas.</p>
+        </section>
+        <section class="page-view" id="projects-view" aria-labelledby="projects-title" hidden>
+          <div class="page-heading">
+            <div>
+              <h1 id="projects-title">Projetos</h1>
+              <p>Um projeto de exemplo para acompanhar entregas e tarefas.</p>
+            </div>
+            <button class="button button-primary" type="button" data-view="tasks">Ver tarefas</button>
+          </div>
+          <section class="project-panel" aria-labelledby="project-name">
+            <h2 id="project-name">Identidade Aurora</h2>
+            <p>Uma identidade visual fictícia, organizada em etapas de pesquisa, conteúdo e interface.</p>
+            <dl class="project-details">
+              <div><dt>Próxima entrega</dt><dd>22 mai</dd></div>
+              <div><dt>Tarefas concluídas</dt><dd id="project-completion"></dd></div>
+              <div><dt>Equipe</dt><dd>Lia · Rafa · Caio</dd></div>
+            </dl>
+            <button class="button" type="button" data-view="tasks">Abrir quadro de tarefas</button>
+          </section>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script>
+    const tasks = [
+      { title: "Revisar referências visuais", status: "todo", detail: "Pesquisa · Lia · 18 mai" },
+      { title: "Confirmar texto da apresentação", status: "todo", detail: "Conteúdo · Rafa · 19 mai" },
+      { title: "Definir estrutura da página", status: "doing", detail: "UX · Caio · 20 mai" },
+      { title: "Preparar componentes de interface", status: "doing", detail: "UI · Lia · 20 mai" },
+      { title: "Organizar arquivos do projeto", status: "done", detail: "Produção · Rafa · 16 mai" },
+      { title: "Alinhar o tom da apresentação", status: "done", detail: "Conteúdo · Caio · 17 mai" }
+    ];
+    const columns = [
+      { id: "todo", name: "A fazer" },
+      { id: "doing", name: "Em andamento" },
+      { id: "done", name: "Concluídas" }
+    ];
+    const appShell = document.querySelector("#app-shell");
+    const board = document.querySelector("#board");
+    const search = document.querySelector("#task-search");
+    const menuToggle = document.querySelector("#menu-toggle");
+    let activeFilter = "all";
+    let nextTask = 1;
+
+    function renderBoard() {
+      const query = search.value.trim().toLocaleLowerCase("pt-BR");
+      const visibleTasks = tasks.filter((task) => {
+        const matchesFilter = activeFilter === "all" ||
+          (activeFilter === "done" ? task.status === "done" : task.status !== "done");
+        return matchesFilter && `${task.title} ${task.detail}`.toLocaleLowerCase("pt-BR").includes(query);
+      });
+
+      board.innerHTML = columns.map((column) => {
+        const columnTasks = visibleTasks.filter((task) => task.status === column.id);
+        const cards = columnTasks.map((task) => {
+          const index = tasks.indexOf(task);
+          return `
+            <button class="task-card" type="button" data-task="${index}" data-status="${task.status}" aria-label="${task.title}. ${task.status === "done" ? "Concluída" : "Marcar como concluída"}">
+              <span class="task-line"><span class="task-title">${task.title}</span><span class="task-marker" aria-hidden="true"></span></span>
+              <span class="task-meta">${task.detail}</span>
+            </button>
+          `;
+        }).join("");
+        return `
+          <section class="column" aria-label="${column.name}">
+            <div class="column-heading"><h2>${column.name}</h2><span class="column-count">${columnTasks.length}</span></div>
+            <div class="task-list">${cards || '<p class="empty-state">Nenhuma tarefa neste grupo.</p>'}</div>
+          </section>
+        `;
+      }).join("");
+
+      const done = tasks.filter((task) => task.status === "done").length;
+      const open = tasks.length - done;
+      const percentage = tasks.length ? Math.round((done / tasks.length) * 100) : 0;
+      const recentDone = tasks.filter((task) => task.status === "done").slice(-2).reverse();
+      document.querySelector("#activity-count").textContent = `${recentDone.length} ${recentDone.length === 1 ? "item" : "itens"}`;
+      document.querySelector("#activity-list").innerHTML = recentDone.map((task) => `
+        <div class="activity-row">
+          <div><strong>${task.title}</strong><span>${task.detail}</span></div>
+          <time>Concluída</time>
+        </div>
+      `).join("") || '<p class="empty-state">Nenhuma tarefa concluída ainda.</p>';
+      document.querySelector("#completion-label").textContent = `${done} de ${tasks.length} concluídas`;
+      document.querySelector("#completion-fill").style.width = `${percentage}%`;
+      document.querySelector("#completion-progress").setAttribute("aria-valuenow", String(done));
+      document.querySelector("#completion-progress").setAttribute("aria-valuemax", String(tasks.length));
+      document.querySelector("#task-summary").textContent = `${open} tarefas em aberto · ${done} concluídas`;
+      document.querySelector("#project-completion").textContent = `${done} de ${tasks.length}`;
+      document.querySelector("#all-count").textContent = String(tasks.length);
+      document.querySelector("#open-count").textContent = String(open);
+      document.querySelector("#done-count").textContent = String(done);
+    }
+
+    function showView(name) {
+      const isTasks = name === "tasks";
+      document.querySelector("#tasks-view").hidden = !isTasks;
+      document.querySelector("#projects-view").hidden = isTasks;
+      document.querySelector("#breadcrumb-current").textContent = isTasks ? "Identidade Aurora" : "Projetos";
+      document.querySelectorAll("[data-view]").forEach((item) => {
+        if (item.classList.contains("nav-link")) {
+          if (item.dataset.view === name) item.setAttribute("aria-current", "page");
+          else item.removeAttribute("aria-current");
+        }
+      });
+      closeMenu();
+    }
+
+    function closeMenu() {
+      appShell.classList.remove("is-menu-open");
+      menuToggle.setAttribute("aria-expanded", "false");
+      menuToggle.setAttribute("aria-label", "Abrir menu");
+    }
+
+    document.querySelectorAll("[data-filter]").forEach((button) => {
+      button.addEventListener("click", () => {
+        activeFilter = button.dataset.filter;
+        document.querySelectorAll("[data-filter]").forEach((filter) => {
+          filter.setAttribute("aria-pressed", String(filter === button));
+        });
+        renderBoard();
+      });
+    });
+
+    document.querySelectorAll("[data-view]").forEach((button) => {
+      button.addEventListener("click", () => showView(button.dataset.view));
+    });
+    search.addEventListener("input", renderBoard);
+    board.addEventListener("click", (event) => {
+      const taskButton = event.target.closest("[data-task]");
+      if (!taskButton) return;
+      const task = tasks[Number(taskButton.dataset.task)];
+      task.status = task.status === "done" ? "doing" : "done";
+      renderBoard();
+    });
+    document.querySelector("#add-task").addEventListener("click", () => {
+      tasks.push({ title: `Nova tarefa demonstrativa ${nextTask++}`, status: "todo", detail: "Ritmo · criada nesta sessão" });
+      activeFilter = "all";
+      document.querySelectorAll("[data-filter]").forEach((filter) => {
+        filter.setAttribute("aria-pressed", String(filter.dataset.filter === "all"));
+      });
+      search.value = "";
+      renderBoard();
+    });
+    menuToggle.addEventListener("click", () => {
+      const open = !appShell.classList.contains("is-menu-open");
+      appShell.classList.toggle("is-menu-open", open);
+      menuToggle.setAttribute("aria-expanded", String(open));
+      menuToggle.setAttribute("aria-label", open ? "Fechar menu" : "Abrir menu");
+    });
+    document.querySelector("#menu-backdrop").addEventListener("click", closeMenu);
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeMenu();
+    });
+    renderBoard();
+  </script>
+</body>
+</html>

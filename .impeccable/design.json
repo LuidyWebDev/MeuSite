@@ -1,0 +1,34 @@
+{
+  "name": "LUCAS VIANA // VÉRTICE STUDIO",
+  "direction": "Abyssal Electric & Optical Precision",
+  "themes": {
+    "dark": {
+      "background": "#000000",
+      "surface": "#080B11",
+      "textPrimary": "#FFFFFF",
+      "textSecondary": "#94A3B8",
+      "accentPrimary": "#00B4FF",
+      "accentSecondary": "#38BDF8",
+      "border": "rgba(59, 130, 246, 0.2)"
+    },
+    "light": {
+      "background": "#FFFFFF",
+      "surface": "#F1F5F9",
+      "textPrimary": "#0B111E",
+      "textSecondary": "#475569",
+      "accentPrimary": "#00B4FF",
+      "accentSecondary": "#0077DD",
+      "border": "rgba(226, 232, 240, 0.9)"
+    }
+  },
+  "typography": {
+    "heading": "Space Grotesk, sans-serif",
+    "body": "Plus Jakarta Sans, sans-serif",
+    "mono": "JetBrains Mono, monospace"
+  },
+  "components": [
+    "src/components/ui/neon-flow.tsx",
+    "src/components/ui/dock.tsx",
+    "src/App.tsx"
+  ]
+}
