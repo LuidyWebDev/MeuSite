@@ -20,14 +20,6 @@ function LinkedinIcon({ className }: { className?: string }) {
   )
 }
 
-function FacebookIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M14 8h3V4h-3a5 5 0 0 0-5 5v3H6v4h3v6h4v-6h3l1-4h-4V9a1 1 0 0 1 1-1z" />
-    </svg>
-  )
-}
-
 function InstagramIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -65,14 +57,6 @@ export function FooterSection({ isDarkMode, onToggleTheme }: FooterSectionProps)
       colorClass: isDarkMode
         ? "bg-white/5 backdrop-blur-md border-white/15 text-[#0A66C2] hover:border-[#0A66C2] hover:bg-[#0A66C2]/15"
         : "bg-white/80 backdrop-blur-md border-neutral-200 text-[#0A66C2] hover:border-[#0A66C2] hover:bg-[#0A66C2]/10",
-    },
-    {
-      name: "Facebook",
-      icon: FacebookIcon,
-      href: PROFILE.socialLinks.facebook,
-      colorClass: isDarkMode
-        ? "bg-white/5 backdrop-blur-md border-white/15 text-[#1877F2] hover:border-[#1877F2] hover:bg-[#1877F2]/15"
-        : "bg-white/80 backdrop-blur-md border-neutral-200 text-[#1877F2] hover:border-[#1877F2] hover:bg-[#1877F2]/10",
     },
     {
       name: "Instagram",

@@ -10,7 +10,6 @@ export const PROFILE = {
   socialLinks: {
     github: "https://github.com/LuidyWebDev",
     linkedin: "https://www.linkedin.com/in/luidy-henrique-da-silva-santos-0793741b9",
-    facebook: "https://www.facebook.com/luidy.henrique.1",
     instagram: "https://www.instagram.com/luidywebdev/",
   },
 } as const
