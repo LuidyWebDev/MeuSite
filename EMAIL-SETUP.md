@@ -6,12 +6,12 @@ O formulário envia os dados pelo SDK do EmailJS diretamente do navegador. Não 
 
 1. No painel do EmailJS, conecte o serviço de e-mail que enviará as mensagens.
 2. Crie o template **Briefing** e configure o destinatário fixo como seu e-mail de contato. Não use um campo preenchido pelo visitante como destinatário.
-3. Configure assunto e corpo do template **Briefing** com estes parâmetros:
-   - `{{from_name}}` — nome ou empresa
-   - `{{reply_to}}` — e-mail para resposta
-   - `{{service_type}}` — escopo selecionado
-   - `{{project_details}}` — detalhes do projeto
-4. Crie um segundo template, **Confirmação**, e configure o campo **To Email** como `{{to_email}}`. Use `{{from_name}}` e `{{service_type}}` para personalizar a confirmação. Configure o **Reply To** como `{{reply_to}}` para que a resposta do visitante vá para o seu contato.
+3. Configure o assunto e o corpo do template **Briefing** usando os parâmetros abaixo. Se desejar, configure o campo **Reply To** como `{{email}}`:
+   - `{{name}}` — nome ou empresa do solicitante
+   - `{{email}}` — e-mail do solicitante
+   - `{{subject}}` — escopo selecionado no formulário
+   - `{{message}}` — descrição do projeto
+4. No template **Confirmação**, configure o campo **To Email** como `{{email}}` para enviar a confirmação ao solicitante. Use `{{name}}`, `{{subject}}` e `{{message}}` no conteúdo conforme desejar.
 5. Em **Account → Security**, limite as origens permitidas ao endereço publicado do site (por exemplo, o domínio `seu-projeto.vercel.app`). Adicione `http://localhost:5174` somente se precisar testar localmente.
 6. Copie o **Public Key**, o **Service ID**, o ID do template **Briefing** e o ID do template **Confirmação**.
 

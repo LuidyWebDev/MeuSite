@@ -159,10 +159,10 @@ export default function App() {
       }
 
       const templateParams = {
-        from_name: String(formData.get("name")),
-        reply_to: String(formData.get("email")),
-        service_type: String(formData.get("service")),
-        project_details: String(formData.get("details")),
+        name: String(formData.get("name")),
+        email: String(formData.get("email")),
+        subject: String(formData.get("service")),
+        message: String(formData.get("details")),
       };
 
       await emailjs.send(
@@ -180,11 +180,7 @@ export default function App() {
       await emailjs.send(
         VITE_EMAILJS_SERVICE_ID,
         VITE_EMAILJS_CONFIRMATION_TEMPLATE_ID,
-        {
-          ...templateParams,
-          to_email: templateParams.reply_to,
-          reply_to: PROFILE.email,
-        },
+        templateParams,
         { publicKey: VITE_EMAILJS_PUBLIC_KEY },
       );
 
