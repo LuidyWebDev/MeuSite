@@ -101,7 +101,7 @@ const PROJECTS: ProjectItem[] = [
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [selectedProject, setSelectedProject] = useState<ProjectItem | null>(null);
-  const [briefingStatus, setBriefingStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [briefingStatus, setBriefingStatus] = useState<"idle" | "sending" | "success" | "partial" | "error">("idle");
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
@@ -138,35 +138,71 @@ export default function App() {
     e.preventDefault();
     const form = e.currentTarget;
     const formData = new FormData(form);
-    const { VITE_EMAILJS_PUBLIC_KEY, VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID } = import.meta.env;
+    const {
+      VITE_EMAILJS_PUBLIC_KEY,
+      VITE_EMAILJS_SERVICE_ID,
+      VITE_EMAILJS_TEMPLATE_ID,
+      VITE_EMAILJS_CONFIRMATION_TEMPLATE_ID,
+    } = import.meta.env;
+    let briefingSent = false;
 
     setBriefingStatus("sending");
 
     try {
-      if (!VITE_EMAILJS_PUBLIC_KEY || !VITE_EMAILJS_SERVICE_ID || !VITE_EMAILJS_TEMPLATE_ID) {
+      if (
+        !VITE_EMAILJS_PUBLIC_KEY ||
+        !VITE_EMAILJS_SERVICE_ID ||
+        !VITE_EMAILJS_TEMPLATE_ID ||
+        !VITE_EMAILJS_CONFIRMATION_TEMPLATE_ID
+      ) {
         throw new Error("EmailJS is not configured. Set its Vite environment variables.");
       }
+
+      const templateParams = {
+        from_name: String(formData.get("name")),
+        reply_to: String(formData.get("email")),
+        service_type: String(formData.get("service")),
+        project_details: String(formData.get("details")),
+      };
 
       await emailjs.send(
         VITE_EMAILJS_SERVICE_ID,
         VITE_EMAILJS_TEMPLATE_ID,
-        {
-          from_name: formData.get("name"),
-          reply_to: formData.get("email"),
-          service_type: formData.get("service"),
-          project_details: formData.get("details"),
-        },
+        templateParams,
         {
           publicKey: VITE_EMAILJS_PUBLIC_KEY,
           limitRate: { id: "portfolio-briefing", throttle: 10000 },
         },
       );
+      briefingSent = true;
+
+      await new Promise((resolve) => window.setTimeout(resolve, 1100));
+      await emailjs.send(
+        VITE_EMAILJS_SERVICE_ID,
+        VITE_EMAILJS_CONFIRMATION_TEMPLATE_ID,
+        {
+          ...templateParams,
+          to_email: templateParams.reply_to,
+          reply_to: PROFILE.email,
+        },
+        { publicKey: VITE_EMAILJS_PUBLIC_KEY },
+      );
 
       form.reset();
       setBriefingStatus("success");
     } catch (error) {
-      console.error("Could not send the project briefing.", error);
-      setBriefingStatus("error");
+      console.error(
+        briefingSent
+          ? "The briefing was sent, but its confirmation email could not be sent."
+          : "Could not send the project briefing.",
+        error,
+      );
+      if (briefingSent) {
+        form.reset();
+        setBriefingStatus("partial");
+      } else {
+        setBriefingStatus("error");
+      }
     }
   };
 
@@ -591,6 +627,7 @@ export default function App() {
               </button>
               <p className={`mt-4 text-sm ${subtextColor}`} role="status" aria-live="polite">
                 {briefingStatus === "success" && "Briefing enviado com sucesso. Obrigado pelo contato."}
+                {briefingStatus === "partial" && "Seu briefing foi recebido, mas não conseguimos enviar o e-mail de confirmação."}
                 {briefingStatus === "error" && "Não foi possível enviar agora. Tente novamente ou entre em contato pelo WhatsApp."}
               </p>
             </form>
