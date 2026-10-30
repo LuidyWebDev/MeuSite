@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import emailjs from '@emailjs/browser'
 import { ShaderHero } from './components/ui/shader-hero'
 import { Aurora } from './components/ui/aurora'
 import { Dock, DockIcon, DockItem, DockLabel } from './components/ui/dock'
@@ -137,24 +138,29 @@ export default function App() {
     e.preventDefault();
     const form = e.currentTarget;
     const formData = new FormData(form);
+    const { VITE_EMAILJS_PUBLIC_KEY, VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID } = import.meta.env;
 
     setBriefingStatus("sending");
 
     try {
-      const response = await fetch("/api/briefing", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.get("name"),
-          email: formData.get("email"),
-          service: formData.get("service"),
-          details: formData.get("details"),
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Briefing submission failed with status ${response.status}`);
+      if (!VITE_EMAILJS_PUBLIC_KEY || !VITE_EMAILJS_SERVICE_ID || !VITE_EMAILJS_TEMPLATE_ID) {
+        throw new Error("EmailJS is not configured. Set its Vite environment variables.");
       }
+
+      await emailjs.send(
+        VITE_EMAILJS_SERVICE_ID,
+        VITE_EMAILJS_TEMPLATE_ID,
+        {
+          from_name: formData.get("name"),
+          reply_to: formData.get("email"),
+          service_type: formData.get("service"),
+          project_details: formData.get("details"),
+        },
+        {
+          publicKey: VITE_EMAILJS_PUBLIC_KEY,
+          limitRate: { id: "portfolio-briefing", throttle: 10000 },
+        },
+      );
 
       form.reset();
       setBriefingStatus("success");
